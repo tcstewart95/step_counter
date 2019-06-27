@@ -5,6 +5,7 @@ buildscript {
     repositories {
         google()
         jcenter()
+        maven { url "https://maven.google.com" }
     }
 
     dependencies {
@@ -16,6 +17,7 @@ rootProject.allprojects {
     repositories {
         google()
         jcenter()
+        maven { url "https://maven.google.com" }
     }
 }
 
@@ -31,4 +33,9 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+}
+
+dependencies {
+    implementation "com.google.android.gms:play-services-fitness:16.0.1"
+    implementation "com.google.android.gms:play-services-auth:12.0.1"
 }

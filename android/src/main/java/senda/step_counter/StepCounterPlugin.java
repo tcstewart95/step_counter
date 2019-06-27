@@ -14,16 +14,27 @@ public class StepCounterPlugin implements MethodCallHandler {
     channel.setMethodCallHandler(new StepCounterPlugin());
   }
 
+
+
   @Override
   public void onMethodCall(MethodCall call, Result result) {
-    if (call.method.equals("getPlatformVersion")) {
-      result.success("Android " + android.os.Build.VERSION.RELEASE);
-    } else if (call.method.equals("authUserWithToken")) {
-      String test  = call.arguments();
+    if (call.method.equals("authUserWithToken")) {
+      result.success(authUserWithToken((call.arguments()).toString()));
     } else if (call.method.equals("authUserNoToken")) {
-
+      result.success(authUserNoToken());
     } else {
       result.notImplemented();
     }
+  }
+
+
+  public String authUserWithToken(String token) {
+    return token;
+  }
+
+
+
+  public String authUserNoToken() {
+    return "no token given";
   }
 }
