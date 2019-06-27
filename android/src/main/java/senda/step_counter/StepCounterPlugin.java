@@ -37,7 +37,7 @@ public class StepCounterPlugin implements MethodCallHandler {
   public String authUser() {
     boolean amIIn = false;
     Authenticator authy = new Authenticator("stuff", context, activity);
-    //amIIn = authy.Authenticate();
+    amIIn = authy.Authenticate();
     return "no token given";
   }
 }
