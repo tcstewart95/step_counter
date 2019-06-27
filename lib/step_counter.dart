@@ -6,13 +6,8 @@ class StepCounter {
   static const MethodChannel _channel =
       const MethodChannel('step_counter');
 
-  static Future<String> authenticateUser(String token) async {
-    final String status = await _channel.invokeMethod('authUserWithToken', token);
-    return status;
-  }
-
-  static Future<String> authenticateUserNoToken() async {
-    final String status = await _channel.invokeMethod('authUserNoToken');
+  static Future<String> authenticateUser() async {
+    final String status = await _channel.invokeMethod('authenticateUser');
     return status;
   }
 }

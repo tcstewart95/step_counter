@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
     String platformVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      platformVersion = await StepCounter.authenticateUser("fdsalkjsdafljtestadfasdf");
+      platformVersion = await StepCounter.authenticateUser();
       //statusNoToken = await StepCounter.authenticateUserNoToken();
       //platformVersion = await StepCounter.platformVersion;
     } on PlatformException {

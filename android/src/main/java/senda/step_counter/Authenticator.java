@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.content.Context;
-import android.app.Activity;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.fitness.Fitness;
@@ -49,7 +48,7 @@ public class Authenticator {
         }
     }
 
-    private Boolean Authenticate() {
+    public boolean Authenticate() {
         FitnessOptions fitnessOptions = FitnessOptions.builder()
             .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -66,7 +65,7 @@ public class Authenticator {
         return true;
     }
 
-    private Boolean AuthenticateWithToken(String token) {
+    private boolean AuthenticateWithToken(String token) {
         return true;
     }
 
