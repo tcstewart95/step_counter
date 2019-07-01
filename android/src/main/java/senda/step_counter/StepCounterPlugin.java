@@ -27,17 +27,52 @@ public class StepCounterPlugin implements MethodCallHandler {
 
   @Override
   public void onMethodCall(MethodCall call, Result result) {
-    if (call.method.equals("authenticateUser")) {
+
+    if (call.method.equals("authenticateUser"))
+    {
       result.success(authUser());
-    } else {
+    }
+    else if(call.method.equals("getStepsInIntervals"))
+    {
+      result.success(getStepsInIntervals());
+    }
+    else if(call.method.equals("getStepsDuringTime"))
+    {
+      result.success(getStepsDuringTime());
+    }
+    else if(call.method.equals("getStepsToday"))
+    {
+      result.success(getStepsToday());
+    }
+    else
+    {
       result.notImplemented();
     }
   }
 
-  public String authUser() {
-    boolean amIIn = false;
-    Authenticator authy = new Authenticator("stuff", context, activity);
-    amIIn = authy.Authenticate();
-    return "no token given";
+  private boolean authUser() {
+    Authenticator authenticator = new Authenticator(context, activity);
+    authenticator.Authenticate();
+    if(authenticator.isAuthenticated) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private int getStepsInIntervals() {
+    Pedometer pedometer = new Pedometer();
+    return pedometer.getStepsInIntervals(1,1,5);
+  }
+
+  private int getStepsDuringTime() {
+    Pedometer pedometer = new Pedometer();
+    return pedometer.getStepsDuringTime(1,1);
+  }
+
+  private int getStepsToday() {
+    Pedometer pedometer = new Pedometer();
+    //return 9000;
+    return pedometer.getStepsToday();
   }
 }
