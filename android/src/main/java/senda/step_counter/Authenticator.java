@@ -2,7 +2,6 @@ package senda.step_counter;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.content.Context;
 
@@ -21,13 +20,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-public class Authenticator {
+public class Authenticator extends Pedometer{
     private Context context;
     private Activity activity;
     private String LOG_TAG = "authReport";
-    private int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE;
+    private int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 80085;
 
-    public boolean isAuthenticated;
+    public String stepCount;
 
     Authenticator(Context context, Activity activity) {
         this.context = context;
@@ -37,14 +36,14 @@ public class Authenticator {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
-                isAuthenticated = true;
+                stepCount = getStepsToday(context);
             }
         } else {
-            isAuthenticated = false;
+            stepCount = "not authenticated";
         }
     }
 
-    public void Authenticate() {
+    public void authenticate() {
         FitnessOptions fitnessOptions = FitnessOptions.builder()
             .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -55,6 +54,8 @@ public class Authenticator {
                 GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
                 GoogleSignIn.getLastSignedInAccount(context),
                 fitnessOptions);
-            }
+        } else {
+            stepCount = getStepsToday(context);
+        }
     }
 }
