@@ -31,30 +31,55 @@ import java.util.concurrent.TimeUnit;
 
 public class Pedometer {
 
-    String steps = "";
 
-    protected int getStepsInIntervals(long startTime, long endTime, int intervals) {
-        DataReadRequest readRequest = new DataReadRequest.Builder()
-                .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
-                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                .build();
 
-        return 10;
+    static String steps = "";
+    private DataSource ds;
+
+
+    public Pedometer () {
+        this.ds = new DataSource.Builder()
+            .setAppPackageName("senda.step_counter")
+            .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+            .setType(DataSource.TYPE_DERIVED)
+            .setStreamName("estimated_steps")
+            .build();
+    } 
+
+
+    protected String getStepsInIntervals(long startTime, long endTime, int intervals, Context context) {
+      
+        final DataReadRequest req = new DataReadRequest.Builder()
+        .aggregate(this.ds, DataType.AGGREGATE_STEP_COUNT_DELTA)
+            .bucketByTime(intervals, TimeUnit.MINUTES)
+            .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+            .build();
+
+        readGoogleResults(context, req);
+
+        return steps;
     }
 
-    protected int getStepsDuringTime(long startTime, long endTime) {
-        DataReadRequest readRequest = new DataReadRequest.Builder()
-                .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
-                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                .build();
 
-        return 50000;
+
+    protected String getStepsDuringTime(long startTime, long endTime, Context context) {
+      
+        final DataReadRequest req = new DataReadRequest.Builder()
+        .aggregate(this.ds, DataType.AGGREGATE_STEP_COUNT_DELTA)
+            .bucketByTime(1, TimeUnit.DAYS)
+            .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+            .build();
+            
+        readGoogleResults(context, req);
+
+        return steps;
     }
+
+
 
     protected String getStepsToday(Context context) {
         long millis = 0;
         long millisMidnight = 0;
-        //final pedometer =;
         try {
             Date today = Calendar.getInstance().getTime();
             millis = today.getTime();
@@ -73,41 +98,39 @@ public class Pedometer {
         } catch (Exception e) {
             return e.toString();
         }
-
-        final DataSource ds = new DataSource.Builder()
-        .setAppPackageName("senda.step_counter")
-        .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
-        .setType(DataSource.TYPE_DERIVED)
-        .setStreamName("estimated_steps")
-        .build();
       
         final DataReadRequest req = new DataReadRequest.Builder()
-        .aggregate(ds, DataType.AGGREGATE_STEP_COUNT_DELTA)
+        .aggregate(this.ds, DataType.AGGREGATE_STEP_COUNT_DELTA)
             .bucketByTime(1, TimeUnit.DAYS)
             .setTimeRange(millisMidnight, millis, TimeUnit.MILLISECONDS)
             .build();
 
+        readGoogleResults(context, req);
+
+        return steps;
+    }
+
+
+
+    private void readGoogleResults(Context context, DataReadRequest request) {
         final Task<DataReadResponse> response = Fitness.getHistoryClient(context, GoogleSignIn.getLastSignedInAccount(context))
-        .readData(req)
+        .readData(request)
         .addOnSuccessListener(
             new OnSuccessListener<DataReadResponse>() {
                 @Override
                 public void onSuccess(DataReadResponse dataReadResponse) {
                     if (dataReadResponse.getBuckets().size() > 0) {
-                        Log.i(
-                            "TAG", "Number of returned buckets of DataSets is: " + dataReadResponse.getBuckets().size());
                         for (Bucket bucket : dataReadResponse.getBuckets()) {
-                          List<DataSet> dataSets = bucket.getDataSets();
-                          for (DataSet dataSet : dataSets) {
-                                Log.i("TAG", dataSet.toString());
-                                Pedometer.this.steps = dataSet.toString();
+                            List<DataSet> dataSets = bucket.getDataSets();
+                            for (DataSet dataSet : dataSets) {
+                                for (DataPoint dp : dataSet.getDataPoints()) {
+                                    steps += dp.toString();
+                                }
                             }
                         }
                     } else if (dataReadResponse.getDataSets().size() > 0) {
-                        Log.i("TAG", "Number of returned DataSets is: " + dataReadResponse.getDataSets().size());
                         for (DataSet dataSet : dataReadResponse.getDataSets()) {
-                            Log.i("TAG", dataSet.toString());
-                            Pedometer.this.steps = dataSet.toString();
+                            steps += dataSet.toString();
                         }
                     }
                 }
@@ -117,12 +140,9 @@ public class Pedometer {
             new OnFailureListener() {
                 @Override
                 public void onFailure(Exception e) {
-                    Pedometer.this.steps = e.toString();
+                    steps = e.toString();
                 }
             }
         );
-
-        return steps;
     }
-
 }

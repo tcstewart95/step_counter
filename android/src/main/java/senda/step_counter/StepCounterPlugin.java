@@ -50,32 +50,27 @@ public class StepCounterPlugin implements MethodCallHandler {
     }
   }
 
-  private boolean authUser() {
-    // Authenticator authenticator = new Authenticator(context, activity);
-    // authenticator.Authenticate();
-    // if(authenticator.isAuthenticated) {
-    //   return true;
-    // } else {
-    //   return false;
-    // }
-    return false;
+  private String authUser() {
+    Authenticator authy = new Authenticator(context, activity);
+    authy.authenticate(0);
+    return authy.stepCount;
   }
 
-  private int getStepsInIntervals() {
-    //Pedometer pedometer = new Pedometer();
-    //return pedometer.getStepsInIntervals(1,1,5);
-    return 0;
+  private String getStepsInIntervals() {
+    Authenticator authy = new Authenticator(context, activity);
+    authy.authenticate(1);
+    return authy.stepCount;
   }
 
-  private int getStepsDuringTime() {
-    //Pedometer pedometer = new Pedometer();
-    //return pedometer.getStepsDuringTime(1,1);
-    return 0;
+  private String getStepsDuringTime() {
+    Authenticator authy = new Authenticator(context, activity);
+    authy.authenticate(2);
+    return authy.stepCount;
   }
 
   private String getStepsToday() {
     Authenticator authy = new Authenticator(context, activity);
-    authy.authenticate();
+    authy.authenticate(3);
     return authy.stepCount;
   }
 }

@@ -6,18 +6,18 @@ class StepCounter {
   static const MethodChannel _channel =
       const MethodChannel('step_counter');
 
-  static Future<bool> authenticateUser() async {
-    final bool status = await _channel.invokeMethod('authenticateUser');
+  static Future<String> authenticateUser() async {
+    final String status = await _channel.invokeMethod('authenticateUser');
     return status;
   }
 
-  static Future<int> getStepsInIntervals() async {
-    final int stepsInIntervals = await _channel.invokeMethod('getStepsInIntervals');
+  static Future<String> getStepsInIntervals() async {
+    final String stepsInIntervals = await _channel.invokeMethod('getStepsInIntervals');
     return stepsInIntervals;
   }
 
-  static Future<int> getStepsDuringTime() async {
-    final int stepsDuringTime = await _channel.invokeMethod('getStepsDuringTime');
+  static Future<String> getStepsDuringTime() async {
+    final String stepsDuringTime = await _channel.invokeMethod('getStepsDuringTime');
     return stepsDuringTime;
   }
 

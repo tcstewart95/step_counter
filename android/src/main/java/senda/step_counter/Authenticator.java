@@ -25,6 +25,7 @@ public class Authenticator extends Pedometer{
     private Activity activity;
     private String LOG_TAG = "authReport";
     private int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 80085;
+    private int postAction;
 
     public String stepCount;
 
@@ -33,17 +34,35 @@ public class Authenticator extends Pedometer{
         this.activity = activity;
     }
 
+    private void setPostAction(int action) {
+        this.postAction = action;
+    }
+
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
-                stepCount = getStepsToday(context);
+                switch (this.postAction) {
+                    case 1:
+                        stepCount = getStepsInIntervals(0,0,0, context);
+                        break;
+                    case 2:
+                        stepCount = getStepsDuringTime(0,0, context);
+                        break;
+                    case 3:
+                        stepCount = getStepsToday(context);
+                        break;
+                    default:
+                        stepCount = "";
+                        break;
+                }
             }
         } else {
             stepCount = "not authenticated";
         }
     }
 
-    public void authenticate() {
+    public void authenticate(int postAction) {
+        setPostAction(postAction);
         FitnessOptions fitnessOptions = FitnessOptions.builder()
             .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
