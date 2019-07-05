@@ -32,25 +32,20 @@ import java.util.concurrent.TimeUnit;
 public class Pedometer {
 
 
-
     static String steps = "";
-    private DataSource ds;
 
 
-    public Pedometer () {
-        this.ds = new DataSource.Builder()
+    protected String getStepsInIntervals(long startTime, long endTime, int intervals, Context context) {
+      
+        DataSource ds = new DataSource.Builder()
             .setAppPackageName("senda.step_counter")
             .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
             .setType(DataSource.TYPE_DERIVED)
             .setStreamName("estimated_steps")
             .build();
-    } 
 
-
-    protected String getStepsInIntervals(long startTime, long endTime, int intervals, Context context) {
-      
         final DataReadRequest req = new DataReadRequest.Builder()
-        .aggregate(this.ds, DataType.AGGREGATE_STEP_COUNT_DELTA)
+        .aggregate(ds, DataType.AGGREGATE_STEP_COUNT_DELTA)
             .bucketByTime(intervals, TimeUnit.MINUTES)
             .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
             .build();
@@ -64,8 +59,15 @@ public class Pedometer {
 
     protected String getStepsDuringTime(long startTime, long endTime, Context context) {
       
+        DataSource ds = new DataSource.Builder()
+            .setAppPackageName("senda.step_counter")
+            .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+            .setType(DataSource.TYPE_DERIVED)
+            .setStreamName("estimated_steps")
+            .build();
+
         final DataReadRequest req = new DataReadRequest.Builder()
-        .aggregate(this.ds, DataType.AGGREGATE_STEP_COUNT_DELTA)
+        .aggregate(ds, DataType.AGGREGATE_STEP_COUNT_DELTA)
             .bucketByTime(1, TimeUnit.DAYS)
             .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
             .build();
@@ -98,9 +100,16 @@ public class Pedometer {
         } catch (Exception e) {
             return e.toString();
         }
+
+        DataSource ds = new DataSource.Builder()
+            .setAppPackageName("senda.step_counter")
+            .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+            .setType(DataSource.TYPE_DERIVED)
+            .setStreamName("estimated_steps")
+            .build();
       
         final DataReadRequest req = new DataReadRequest.Builder()
-        .aggregate(this.ds, DataType.AGGREGATE_STEP_COUNT_DELTA)
+        .aggregate(ds, DataType.AGGREGATE_STEP_COUNT_DELTA)
             .bucketByTime(1, TimeUnit.DAYS)
             .setTimeRange(millisMidnight, millis, TimeUnit.MILLISECONDS)
             .build();

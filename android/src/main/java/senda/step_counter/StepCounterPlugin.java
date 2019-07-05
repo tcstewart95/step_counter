@@ -11,8 +11,14 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /** StepCounterPlugin */
 public class StepCounterPlugin implements MethodCallHandler {
+
   Activity activity;
   Context context;
+
+  private int ON_POST_DO_NOTHING = 0;
+  private int ON_POST_GET_STEPS_IN_INTERVALS = 1;
+  private int ON_POST_GET_STEPS_DURING_TIME = 2;
+  private int ON_POST_GET_STEPS_TODAY = 3;
 
   /** Plugin registration. */
   public static void registerWith(Registrar registrar) {
@@ -34,11 +40,11 @@ public class StepCounterPlugin implements MethodCallHandler {
     }
     else if(call.method.equals("getStepsInIntervals"))
     {
-      result.success(getStepsInIntervals());
+      result.success(getStepsInIntervals((int) call.argument("startTime"), (int) call.argument("endTime"), (int) call.argument("intervals")));
     }
     else if(call.method.equals("getStepsDuringTime"))
     {
-      result.success(getStepsDuringTime());
+      result.success(getStepsDuringTime((int) call.argument("startTime"), (int) call.argument("endTime")));
     }
     else if(call.method.equals("getStepsToday"))
     {
@@ -52,25 +58,25 @@ public class StepCounterPlugin implements MethodCallHandler {
 
   private String authUser() {
     Authenticator authy = new Authenticator(context, activity);
-    authy.authenticate(0);
+    authy.authenticate(ON_POST_DO_NOTHING);
     return authy.stepCount;
   }
 
-  private String getStepsInIntervals() {
-    Authenticator authy = new Authenticator(context, activity);
-    authy.authenticate(1);
+  private String getStepsInIntervals(int startTime, int endTime, int intervals) {
+    Authenticator authy = new Authenticator(context, activity, startTime, endTime, intervals);
+    authy.authenticate(ON_POST_GET_STEPS_IN_INTERVALS);
     return authy.stepCount;
   }
 
-  private String getStepsDuringTime() {
-    Authenticator authy = new Authenticator(context, activity);
-    authy.authenticate(2);
+  private String getStepsDuringTime(int startTime, int endTime) {
+    Authenticator authy = new Authenticator(context, activity, startTime, endTime);
+    authy.authenticate(ON_POST_GET_STEPS_DURING_TIME);
     return authy.stepCount;
   }
 
   private String getStepsToday() {
     Authenticator authy = new Authenticator(context, activity);
-    authy.authenticate(3);
+    authy.authenticate(ON_POST_GET_STEPS_TODAY);
     return authy.stepCount;
   }
 }

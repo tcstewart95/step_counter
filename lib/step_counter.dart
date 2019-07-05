@@ -11,12 +11,12 @@ class StepCounter {
     return status;
   }
 
-  static Future<String> getStepsInIntervals() async {
-    final String stepsInIntervals = await _channel.invokeMethod('getStepsInIntervals');
+  static Future<String> getStepsInIntervals(int startTime, int endTime, int interval) async {
+    final String stepsInIntervals = await _channel.invokeMethod('getStepsInIntervals', {'startTime' : startTime, 'endTime' : endTime, 'interval' : interval});
     return stepsInIntervals;
   }
 
-  static Future<String> getStepsDuringTime() async {
+  static Future<String> getStepsDuringTime(int startTime, int endTime) async {
     final String stepsDuringTime = await _channel.invokeMethod('getStepsDuringTime');
     return stepsDuringTime;
   }

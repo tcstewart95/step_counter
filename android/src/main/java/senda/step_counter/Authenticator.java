@@ -26,8 +26,26 @@ public class Authenticator extends Pedometer{
     private String LOG_TAG = "authReport";
     private int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 80085;
     private int postAction;
+    private int startTime;
+    private int endTime;
+    private int intervals;
 
-    public String stepCount;
+    public String stepCount = "still launching";
+
+    Authenticator(Context context, Activity activity, int startTime, int endTime, int intervals) {
+        this.context = context;
+        this.activity = activity;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.intervals = intervals;
+    }
+
+    Authenticator(Context context, Activity activity, int startTime, int endTime) {
+        this.context = context;
+        this.activity = activity;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 
     Authenticator(Context context, Activity activity) {
         this.context = context;
@@ -43,26 +61,28 @@ public class Authenticator extends Pedometer{
             if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
                 switch (this.postAction) {
                     case 1:
-                        stepCount = getStepsInIntervals(0,0,0, context);
+                        stepCount = getStepsInIntervals(startTime, endTime, intervals, context);
                         break;
                     case 2:
-                        stepCount = getStepsDuringTime(0,0, context);
+                        stepCount = getStepsDuringTime(startTime, endTime, context);
                         break;
                     case 3:
                         stepCount = getStepsToday(context);
                         break;
                     default:
-                        stepCount = "";
+                        stepCount = "0";
                         break;
                 }
             }
         } else {
-            stepCount = "not authenticated";
+            stepCount += "not authenticated";
         }
     }
 
     public void authenticate(int postAction) {
+
         setPostAction(postAction);
+        
         FitnessOptions fitnessOptions = FitnessOptions.builder()
             .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
