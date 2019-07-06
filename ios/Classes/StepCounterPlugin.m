@@ -10,15 +10,40 @@
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-  if ([@"getPlatformVersion" isEqualToString:call.method]) {
-    result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
-  } else if ([@"authUserWithToken" isEqualToString:call.method]) {
-
-  } else if ([@"authUserNoToken" isEqualToString:call.method]) {
-
-  } else {
+  if ([@"authenticateUser" isEqualToString:call.method]) {
+    result(authUser());
+  }
+  if ([@"getStepsInIntervals" isEqualToString:call.method]) 
+  {
+    result(getStepsInIntervals());
+  }
+  else if ([@"getStepsDuringTime" isEqualToString:call.method])
+  {
+    result(getStepsDuringTime());
+  }
+  else if ([@"getStepsToday" isEqualToString:call.method])
+  {
+    result(getStepsToday());
+  }
+  else
+  {
     result(FlutterMethodNotImplemented);
   }
 }
 
+- (String)authUser:() {
+  
+}
+
+- (String)getStepsInIntervals:(int*)startTime :(int*)endTime :(int*)intervals {
+
+}
+
+- (String)getStepsDuringTime:(int*)startTime :(int*)endTime {
+
+}
+
+- (String)getStepsToday:() {
+
+}
 @end
