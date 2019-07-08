@@ -93,7 +93,7 @@ public class Pedometer{
         }
       
         final DataReadRequest req = new DataReadRequest.Builder()
-            .read(DataType.TYPE_STEP_COUNT_DELTA)
+            .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
             .bucketByTime(1, TimeUnit.DAYS)
             .setTimeRange(millisMidnight, millis, TimeUnit.MILLISECONDS)
             .enableServerQueries()
@@ -123,12 +123,12 @@ public class Pedometer{
                                 if (output != null) {
                                     steps = output;
                                 } else {
-                                    steps = "Network Failure";
+                                    steps = "No Pedometer Connected";
                                 }
                             }
                         }).execute(list);
                     } catch (Exception e) {
-                        steps = "Network Failure";
+                        steps = "Unable to Connect";
                     }
                 }
 

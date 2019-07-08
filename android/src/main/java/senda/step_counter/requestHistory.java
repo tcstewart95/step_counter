@@ -83,18 +83,17 @@ public class requestHistory extends AsyncTask<List<Object>, Void, String> {
                     for (Bucket bucket : totalResult.getBuckets()) {
                         List<DataSet> dataSets = bucket.getDataSets();
                         for (DataSet dataSet : dataSets) {
-                            steps = dataSet.toString();
+                            steps = dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).toString();
                         }
+                    }
+                }            
+                //Used for non-aggregated data
+                else if (totalResult.getDataSets().size() > 0) {
+                    for (DataSet dataSet : totalResult.getDataSets()) {
+                        steps = dataSet.toString();
                     }
                 }
                 return steps;
-            }
-            //Used for non-aggregated data
-            else if (totalResult.getDataSets().size() > 0) {
-                for (DataSet dataSet : totalResult.getDataSets()) {
-                    steps = dataSet.toString();
-                }
-                return "steps";
             }
             else {
                 return "Network Error";
