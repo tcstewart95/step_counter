@@ -31,23 +31,23 @@
   }
 }
 
-- (String)authUser:() {
+- (NSString)authUser:() {
   
 }
 
-- (String)getStepsInIntervals:(int)startTime :(int)endTime :(int)intervals {
+- (NSString)getStepsInIntervals:(int)startTime :(int)endTime :(int)intervals {
 
 }
 
-- (String)getStepsDuringTime:(int)startTime :(int)endTime {
+- (NSString)getStepsDuringTime:(int)startTime :(int)endTime {
 
 }
 
-- (String)getStepsToday:() {
+- (NSString)getStepsToday:() {
 
 }
 
-- (String)executeQuery:(NSDate)startTime :(NSDate)endTime {
+- (NSString)executeQuery:(NSDate)startTime :(NSDate)endTime {
   NSCalendar *calendar = [NSCalendar currentCalendar];
   NSDateComponents *interval = [[NSDateComponents alloc] init];
   interval.day = 1;
@@ -86,5 +86,7 @@
   };
 
   [self.healthStore executeQuery:query];
+
+  return @"stuff";
 }
 @end
