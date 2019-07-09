@@ -32,19 +32,24 @@
 }
 
 - (NSString)authUser:() {
-  
+  return @"authenticated";
 }
 
 - (NSString)getStepsInIntervals:(int)startTime :(int)endTime :(int)intervals {
-
+  return [this.executeQuery([NSDate dateWithTimeIntervalSince1970:(startTime / 1000.0)], [NSDate dateWithTimeIntervalSince1970:(endTime / 1000.0)])];
 }
 
 - (NSString)getStepsDuringTime:(int)startTime :(int)endTime {
-
+  return [this.executeQuery([NSDate dateWithTimeIntervalSince1970:(startTime / 1000.0)], [NSDate dateWithTimeIntervalSince1970:(endTime / 1000.0)])];
 }
 
 - (NSString)getStepsToday:() {
-
+  NSDate *const date = NSDate.date;
+  NSCalendar *const calendar = NSCalendar.currentCalendar;
+  NSCalendarUnit const preservedComponents = (NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay);
+  NSDateComponents *const components = [calendar components:preservedComponents fromDate:date];
+  NSDate *const normalizedDate = [calendar dateFromComponents:components];
+  return [this.executeQuery(NSDate.date, normalizedDate)];
 }
 
 - (NSString)executeQuery:(NSDate)startTime :(NSDate)endTime {
