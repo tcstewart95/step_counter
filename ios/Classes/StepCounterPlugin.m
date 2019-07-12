@@ -11,19 +11,19 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   if ([@"authenticateUser" isEqualToString:call.method]) {
-    result(authUser());
+    result([self authUser]);
   }
   if ([@"getStepsInIntervals" isEqualToString:call.method]) 
   {
-    result(getStepsInIntervals());
+    result([self getStepsInIntervals :(int) call.arguments[0] :(int) call.arguments("endTime") :(int) call.arguments("intervals")]);
   }
   else if ([@"getStepsDuringTime" isEqualToString:call.method])
   {
-    result(getStepsDuringTime());
+    result([self getStepsDuringTime :(int) call.arguments("startTime") :(int) call.arguments("endTime")]);
   }
   else if ([@"getStepsToday" isEqualToString:call.method])
   {
-    result(getStepsToday());
+    result([self getStepsToday]);
   }
   else
   {
@@ -31,19 +31,19 @@
   }
 }
 
-- (NSString)authUser:() {
+- (NSString *) authUser {
   return @"authenticated";
 }
 
-- (NSString)getStepsInIntervals:(int)startTime :(int)endTime :(int)intervals {
-  return [this.executeQuery([NSDate dateWithTimeIntervalSince1970:(startTime / 1000.0)], [NSDate dateWithTimeIntervalSince1970:(endTime / 1000.0)])];
+- (NSString *)getStepsInIntervals:(int)startTime :(int)endTime :(int)intervals {
+  return [self executeQuery:dateWithTimeIntervalSince1970:(startTime/1000.0) :dateWithTimeIntervalSince1970:(endTime/1000.0)];
 }
 
-- (NSString)getStepsDuringTime:(int)startTime :(int)endTime {
-  return [this.executeQuery([NSDate dateWithTimeIntervalSince1970:(startTime / 1000.0)], [NSDate dateWithTimeIntervalSince1970:(endTime / 1000.0)])];
+- (NSString *)getStepsDuringTime:(int)startTime :(int)endTime {
+  return [self executeQuery:(dateWithTimeIntervalSince1970:(startTime/1000.0)) :(dateWithTimeIntervalSince1970:(endTime/1000.0))];
 }
 
-- (NSString)getStepsToday:() {
+- (NSString *)getStepsToday {
   NSDate *const date = NSDate.date;
   NSCalendar *const calendar = NSCalendar.currentCalendar;
   NSCalendarUnit const preservedComponents = (NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay);
@@ -52,7 +52,7 @@
   return [this.executeQuery(NSDate.date, normalizedDate)];
 }
 
-- (NSString)executeQuery:(NSDate)startTime :(NSDate)endTime {
+- (NSString *)executeQuery:(NSDate *)startTime :(NSDate *)endTime {
   NSCalendar *calendar = [NSCalendar currentCalendar];
   NSDateComponents *interval = [[NSDateComponents alloc] init];
   interval.day = 1;
@@ -72,14 +72,10 @@
 
   // Set the results handler
   query.initialResultsHandler = ^(HKStatisticsCollectionQuery *query, HKStatisticsCollection *results, NSError *error) {
-    if (error) {
-        // Perform proper error handling here
-        NSLog(@"*** An error occurred while calculating the statistics: %@ ***",error.localizedDescription);
-    }
 
     // Plot the daily step counts over the past 7 days
-    [results enumerateStatisticsFromDate:startDate
-      toDate:endDate
+    [results enumerateStatisticsFromDate:StartTime
+      toDate:endTime
       withBlock:^(HKStatistics *result, BOOL *stop) {
         HKQuantity *quantity = result.sumQuantity;
         if (quantity) {
@@ -90,7 +86,7 @@
     }];
   };
 
-  [self.healthStore executeQuery:query];
+//[self.healthStore executeQuery:query];
 
   return @"stuff";
 }
