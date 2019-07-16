@@ -15,15 +15,15 @@
   }
   if ([@"getStepsInIntervals" isEqualToString:call.method]) 
   {
-    result([self getStepsInIntervals :(int) call.arguments[0] :(int) call.arguments[1] :(int) call.arguments[2]]);
+    [self getStepsInIntervals :(int) call.arguments[0] :(int) call.arguments[1] :(int) call.arguments[2] :result];
   }
   else if ([@"getStepsDuringTime" isEqualToString:call.method])
   {
-    result([self getStepsDuringTime :(int) call.arguments[0] :(int) call.arguments[1]]);
+    [self getStepsDuringTime :(int) call.arguments[0] :(int) call.arguments[1] :result];
   }
   else if ([@"getStepsToday" isEqualToString:call.method])
   {
-    result([self getStepsToday]);
+    [self getStepsToday :result];
   }
   else
   {
@@ -36,71 +36,90 @@
 }
 
 
-- (NSString *)getStepsInIntervals :(int)startTime :(int)endTime :(int)intervals {
-  //[NSDate dateWithTimeIntervalSince1970:(endTime / 1000.0)];
+- (void)getStepsInIntervals :(int)startTime :(int)endTime :(int)intervals :(FlutterResult)result{
   NSDate *start = [NSDate dateWithTimeIntervalSince1970:(startTime / 1000.0)];
   NSDate *end = [NSDate dateWithTimeIntervalSince1970:(endTime / 1000.0)];
-  return [self executeQuery :start :end];
+  [self executeQuery :start :end :result];
 }
 
 
-- (NSString *)getStepsDuringTime :(int)startTime :(int)endTime {
+- (void)getStepsDuringTime :(int)startTime :(int)endTime :(FlutterResult)result{
   NSDate *start = [NSDate dateWithTimeIntervalSince1970:(startTime / 1000.0)];
   NSDate *end = [NSDate dateWithTimeIntervalSince1970:(endTime / 1000.0)];
-  return [self executeQuery :start :end];
+  [self executeQuery :start :end :result];
 }
 
 
-- (NSString *)getStepsToday {
+- (void)getStepsToday :(FlutterResult)result{
   NSDate *const date = NSDate.date;
   NSCalendar *const calendar = NSCalendar.currentCalendar;
-  NSCalendarUnit const preservedComponents = (NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay);
-  NSDateComponents *const components = [calendar components:preservedComponents fromDate:date];
+  [calendar setTimeZone:[NSTimeZone timeZoneWithName:@"MST"]];
+  NSCalendarUnit const preservedComponents = (NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond);
+  NSDateComponents *components = [calendar components:preservedComponents fromDate:date];
   NSDate *const normalizedDate = [calendar dateFromComponents:components];
-  return [self executeQuery :NSDate.date :normalizedDate];
+    
+    
+  NSCalendarUnit const preservedComponentsMidnight = (NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond);
+  NSDateComponents *componentsMidnight = [calendar components:preservedComponentsMidnight fromDate:date];
+  componentsMidnight.hour = 0;
+  componentsMidnight.minute = 0;
+  componentsMidnight.second = 0;
+  NSDate *const midnightDate = [calendar dateFromComponents:componentsMidnight];
+  [self executeQuery :midnightDate :normalizedDate :result];
 }
 
 
-
-- (NSString *)executeQuery :(NSDate*)sTime :(NSDate*)eTime {
-  NSCalendar *calendar = [NSCalendar currentCalendar];
-  NSDateComponents *interval = [[NSDateComponents alloc] init];
-  interval.day = 1;
-
-  NSDateComponents *anchorComponents = [calendar components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear
-    fromDate:[NSDate date]];
-  anchorComponents.hour = 0;
-  NSDate *anchorDate = [calendar dateFromComponents:anchorComponents];
-  HKQuantityType *quantityType = [HKObjectType quantityTypeForIdentifier:HKQuantityTypeIdentifierStepCount];
-
-  // Create the query
-  HKStatisticsCollectionQuery *query = [[HKStatisticsCollectionQuery alloc] initWithQuantityType:quantityType
-    quantitySamplePredicate:nil
-    options:HKStatisticsOptionCumulativeSum
-    anchorDate:anchorDate
-    intervalComponents:interval];
-
-  // Set the results handler
-  __block double value = 0;
-  query.initialResultsHandler = ^(HKStatisticsCollectionQuery *query, HKStatisticsCollection *results, NSError *error) {
-
-    // Plot the daily step counts over the past 7 days
-    [results enumerateStatisticsFromDate:sTime
-      toDate:eTime
-      withBlock:^(HKStatistics *result, BOOL *stop) {
-        HKQuantity *quantity = result.sumQuantity;
-        if (quantity) {
-            NSDate *date = result.startDate;
-            value = [quantity doubleValueForUnit:[HKUnit countUnit]];
-        } else {
-          NSLog(@"No Connection");
+- (void)executeQuery :(NSDate*)sTime :(NSDate*)eTime :(FlutterResult)resultHandler{
+    HKHealthStore *healthStore = [[HKHealthStore alloc] init];
+    __block double stepsCount = 0.0;
+    
+    HKQuantityType *quantityType = [HKObjectType quantityTypeForIdentifier:HKQuantityTypeIdentifierStepCount];
+    
+    NSSet *stepsType =[NSSet setWithObject:[HKObjectType quantityTypeForIdentifier:HKQuantityTypeIdentifierStepCount]];
+    
+    
+    [healthStore requestAuthorizationToShareTypes:nil readTypes:stepsType completion:^(BOOL success, NSError * _Nullable error) {
+        if (success) {
+            
+            NSCalendar *calendar = [NSCalendar currentCalendar];
+            NSDateComponents *anchorComponents = [calendar components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:[NSDate date]];
+            anchorComponents.hour = 0;
+            NSDate *anchorDate = [calendar dateFromComponents:anchorComponents];
+            
+            NSDateComponents *interval = [[NSDateComponents alloc] init];
+            interval.day = 1;
+            HKStatisticsCollectionQuery *query = [[HKStatisticsCollectionQuery alloc]   initWithQuantityType:quantityType
+                quantitySamplePredicate:nil
+                options:HKStatisticsOptionCumulativeSum
+                anchorDate:anchorDate
+                intervalComponents:interval];
+            
+            // Set the results handler
+            query.initialResultsHandler = ^(HKStatisticsCollectionQuery *query, HKStatisticsCollection *results, NSError *error) {
+                if (error) {
+                    // Perform proper error handling here
+                    NSLog(@"*** An error occurred while calculating the statistics: %@ ***",error.localizedDescription);
+                }
+                [results enumerateStatisticsFromDate:sTime
+                                              toDate:eTime
+               withBlock:^(HKStatistics *result, BOOL *stop) {
+                   HKQuantity *quantity = result.sumQuantity;
+                   if (quantity) {
+                       stepsCount = [quantity doubleValueForUnit:[HKUnit countUnit]];
+                       NSNumber *myDoubleNumber = [NSNumber numberWithDouble:stepsCount];
+                       NSString *returnValue = [myDoubleNumber stringValue];
+                       [self returnResult:returnValue :resultHandler];
+                   }
+                   
+               }];
+            };
+            [healthStore executeQuery:query];
         }
     }];
-  };
-
-//[self.healthStore executeQuery:query];
-  NSNumber *myDoubleNumber = [NSNumber numberWithDouble:value];
-  NSString *returnValue = [myDoubleNumber stringValue];
-  return returnValue;
 }
+
+-(void)returnResult :(NSString *)stepCount :(FlutterResult)result{
+    result(stepCount);
+}
+
 @end
