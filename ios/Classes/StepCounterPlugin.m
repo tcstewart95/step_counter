@@ -15,7 +15,7 @@
   }
   if ([@"getStepsInIntervals" isEqualToString:call.method]) 
   {
-    [self getStepsInIntervals :(int) call.arguments[0] :(int) call.arguments[1] :(int) call.arguments[2] :result];
+    [self getStepsInIntervals :(int) call.arguments[0] :(int) call.arguments[1] :(int) call.arguments[2] :(int) call.arguments[3] :result];
   }
   else if ([@"getStepsDuringTime" isEqualToString:call.method])
   {
@@ -36,7 +36,7 @@
 }
 
 
-- (void)getStepsInIntervals :(int)startTime :(int)endTime :(int)intervals :(FlutterResult)result{
+- (void)getStepsInIntervals :(int)startTime :(int)endTime :(int)intervalQuantity :(NSString)intervalUnit :(FlutterResult)result{
   NSDate *start = [NSDate dateWithTimeIntervalSince1970:(startTime / 1000.0)];
   NSDate *end = [NSDate dateWithTimeIntervalSince1970:(endTime / 1000.0)];
   [self executeQuery :start :end :result];

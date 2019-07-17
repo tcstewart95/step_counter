@@ -28,16 +28,18 @@ public class Authenticator extends Pedometer{
     private int postAction;
     private int startTime;
     private int endTime;
-    private int intervals;
+    private int intervalQuantity;
+    private String intervalUnit;
 
     public String stepCount = "still launching";
 
-    Authenticator(Context context, Activity activity, int startTime, int endTime, int intervals) {
+    Authenticator(Context context, Activity activity, int startTime, int endTime, int intervalQuantity, int intervalUnit) {
         this.context = context;
         this.activity = activity;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.intervals = intervals;
+        this.intervalQuantity = intervalQuantity;
+        this.intervalUnit = intervalUnit;
     }
 
     Authenticator(Context context, Activity activity, int startTime, int endTime) {

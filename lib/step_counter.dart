@@ -11,8 +11,8 @@ class StepCounter {
     return status;
   }
 
-  static Future<String> getStepsInIntervals(int startTime, int endTime, int interval) async {
-    final String stepsInIntervals = await _channel.invokeMethod('getStepsInIntervals', {'startTime' : startTime, 'endTime' : endTime, 'interval' : interval});
+  static Future<String> getStepsInIntervals(int startTime, int endTime, int intervalQuantity, String intervalUnit) async {
+    final String stepsInIntervals = await _channel.invokeMethod('getStepsInIntervals', {'startTime' : startTime, 'endTime' : endTime, 'intervalQuantity' : intervalQuantity, 'intervalUnit' : intervalUnit });
     return stepsInIntervals;
   }
 

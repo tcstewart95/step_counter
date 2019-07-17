@@ -40,7 +40,7 @@ public class StepCounterPlugin implements MethodCallHandler {
     }
     else if(call.method.equals("getStepsInIntervals"))
     {
-      result.success(getStepsInIntervals((int) call.argument("startTime"), (int) call.argument("endTime"), (int) call.argument("intervals")));
+      result.success(getStepsInIntervals((int) call.argument("startTime"), (int) call.argument("endTime"), (int) call.argument("intervalQuantity"), (int) call.argument("intervalUnit")));
     }
     else if(call.method.equals("getStepsDuringTime"))
     {
@@ -62,8 +62,8 @@ public class StepCounterPlugin implements MethodCallHandler {
     return authy.stepCount;
   }
 
-  private String getStepsInIntervals(int startTime, int endTime, int intervals) {
-    Authenticator authy = new Authenticator(context, activity, startTime, endTime, intervals);
+  private String getStepsInIntervals(int startTime, int endTime, int intervalQuantity, int intervalUnit) {
+    Authenticator authy = new Authenticator(context, activity, startTime, endTime, intervalQuantity, intervalUnit);
     authy.authenticate(ON_POST_GET_STEPS_IN_INTERVALS);
     return authy.stepCount;
   }
