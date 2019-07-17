@@ -39,11 +39,25 @@ public class Pedometer{
     public static String steps = "";
     private static GoogleApiClient mClient = null;
 
-
-    protected String getStepsInIntervals(long startTime, long endTime, int intervals, Context context) {
+    protected String getStepsInIntervals(long startTime, long endTime, int intervalQuantity, String intervalUnit,  Context context) {
+        TimeUnit _timeUnit; 
+        switch(intervalUnit) {
+            case "days":
+                _timeUnit = TimeUnit.DAYS;
+                break;
+            case "hours":
+                _timeUnit = TimeUnit.HOURS;
+                break;
+            case "minutes":
+                _timeUnit = TimeUnit.MINUTES;
+                break;
+            default:
+                return "Interval unit not supported";
+        }
+        
         final DataReadRequest req = new DataReadRequest.Builder()
             .read(DataType.AGGREGATE_STEP_COUNT_DELTA)
-            .bucketByTime(intervals, TimeUnit.MINUTES)
+            .bucketByTime(intervalQuantity, _timeUnit)
             .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
             .enableServerQueries()
             .build();

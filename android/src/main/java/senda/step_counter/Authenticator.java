@@ -33,7 +33,7 @@ public class Authenticator extends Pedometer{
 
     public String stepCount = "still launching";
 
-    Authenticator(Context context, Activity activity, int startTime, int endTime, int intervalQuantity, int intervalUnit) {
+    Authenticator(Context context, Activity activity, int startTime, int endTime, int intervalQuantity, String intervalUnit) {
         this.context = context;
         this.activity = activity;
         this.startTime = startTime;
@@ -63,7 +63,7 @@ public class Authenticator extends Pedometer{
             if (requestCode == GOOGLE_FIT_PERMISSIONS_REQUEST_CODE) {
                 switch (this.postAction) {
                     case 1:
-                        stepCount = getStepsInIntervals(startTime, endTime, intervals, context);
+                        stepCount = getStepsInIntervals(startTime, endTime, intervalQuantity, intervalUnit, context);
                         break;
                     case 2:
                         stepCount = getStepsDuringTime(startTime, endTime, context);
