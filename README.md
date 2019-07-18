@@ -1,10 +1,9 @@
 # step_counter
 
-Flutter plugin. Pedometer in ObjC and Java.
+Flutter plugin that acts as a Pedometer in ObjC and Java using HealthKit and the Google Fitness Store.
 
 ## Usage
 To use this plugin, add `step_counter` as a [dependency in your pubspec.yaml file](https://flutter.io/platform-plugins/).
-
 
 ## Getting Started
 #### Android
@@ -13,12 +12,43 @@ To use this plugin, add `step_counter` as a [dependency in your pubspec.yaml fil
 #### iOS
 [Enable HealthKit](https://developer.apple.com/documentation/healthkit/setting_up_healthkit) and add NSHealthShareUsageDescription key to the Info.plist file.
 
-## Sample Usage
+## Template
 
 ```dart
 readAll() {
     Future<String> stepCountToday = StepCounter.getStepsToday();
-    Future<String> stepCountInIntervales = StepCounter.getStepsInIntervals(int startTimeMilliseconds, int endTimeMilliseconds, int timeInterval);
+    Future<String> stepCountInIntervales = StepCounter.getStepsInIntervals(int startTimeMilliseconds, int endTimeMilliseconds, int intervalQuantity, String intervalUnit);
     Future<String> getStepsDuringTimePeriod = StepCounter.getStepsDuringTime(int startTimeMilliseconds, int endTimeMilliseconds);
+}
+```
+
+## Sample Usage
+
+```dart
+readAll() {
+    String results = "";
+    
+    //Get today's date and set a date to the desired start date of the query.
+    var now  = new DateTime.now();
+    var past = now.subtract(new Duration(hours: 12));
+
+    //Convert both dates to milliseconds since the "Unix epoch" 1970-01-01T00:00:00Z (UTC).
+    int end   = now.millisecondsSinceEpoch;
+    int start = past.millisecondsSinceEpoch;
+
+    //Set the length and unit of intervals to be queried within the range of dates previously defined. 
+    int intervalLength = 20;
+    String intervalUnit = 'minute';
+
+    //Query HealthKit (on iOS) or the Google Fitness Store (on Android) through StepCounter.
+
+    //Get the total number of steps between the start and end date in intervals.
+    Future<Map<dynamic,dynamic>> stepCount = StepCounter.getStepsInIntervals(start, end, intervalLength, intervalUnit);
+
+    //Get the total number of steps between the start date and end date.
+    Future<int> stepCount = StepCounter.getStepsDuringTime(start, end);
+
+    //Get the total number of steps since midnight today.
+    Future<int> stepCount = StepCounter.getStepsToday();
 }
 ```
