@@ -15,11 +15,11 @@
   }
   if ([@"getStepsInIntervals" isEqualToString:call.method]) 
   {
-    [self getStepsInIntervals :(int) call.arguments[0] :(int) call.arguments[1] :(int) call.arguments[2] :(int) call.arguments[3] :result];
+    [self getStepsInIntervals :[call.arguments[@"startTime"] longValue] :[call.arguments[@"endTime"] longValue] :[call.arguments[@"intervalQuantity"] intValue] :call.arguments[@"intervalUnit"] :result];
   }
   else if ([@"getStepsDuringTime" isEqualToString:call.method])
   {
-    [self getStepsDuringTime :(int) call.arguments[0] :(int) call.arguments[1] :result];
+      [self getStepsDuringTime :[call.arguments[@"startTime"] longValue] :[call.arguments[@"endTime"] longValue] :result];
   }
   else if ([@"getStepsToday" isEqualToString:call.method])
   {
@@ -36,17 +36,19 @@
 }
 
 
-- (void)getStepsInIntervals :(int)startTime :(int)endTime :(int)intervalQuantity :(NSString)intervalUnit :(FlutterResult)result{
-  NSDate *start = [NSDate dateWithTimeIntervalSince1970:(startTime / 1000.0)];
-  NSDate *end = [NSDate dateWithTimeIntervalSince1970:(endTime / 1000.0)];
-  [self executeQuery :start :end :result];
+- (void)getStepsInIntervals :(long)startTime :(long)endTime :(int)intervalQuantity :(NSString*)intervalUnit :(FlutterResult)result{
+  NSDate *start = [NSDate dateWithTimeIntervalSince1970:(startTime / 1000)];
+  NSDate *end = [NSDate dateWithTimeIntervalSince1970:(endTime / 1000)];
+  [self executeQuery :start :end :intervalQuantity :intervalUnit :result :0];
 }
 
 
-- (void)getStepsDuringTime :(int)startTime :(int)endTime :(FlutterResult)result{
+- (void)getStepsDuringTime :(long)startTime :(long)endTime :(FlutterResult)result{
   NSDate *start = [NSDate dateWithTimeIntervalSince1970:(startTime / 1000.0)];
   NSDate *end = [NSDate dateWithTimeIntervalSince1970:(endTime / 1000.0)];
-  [self executeQuery :start :end :result];
+  int intervalQuantity = 1;
+  NSString *intervalUnit = @"minute";
+  [self executeQuery :start :end :intervalQuantity :intervalUnit :result :1];
 }
 
 
@@ -65,13 +67,15 @@
   componentsMidnight.minute = 0;
   componentsMidnight.second = 0;
   NSDate *const midnightDate = [calendar dateFromComponents:componentsMidnight];
-  [self executeQuery :midnightDate :normalizedDate :result];
+  int intervalQuantity = 1;
+  NSString *intervalUnit = @"day";
+    [self executeQuery :midnightDate :normalizedDate :intervalQuantity :intervalUnit :result :2];
 }
 
 
-- (void)executeQuery :(NSDate*)sTime :(NSDate*)eTime :(FlutterResult)resultHandler{
+- (void)executeQuery :(NSDate*)sTime :(NSDate*)eTime :(int)intervalQuantity :(NSString*)intervalUnit :(FlutterResult)resultHandler :(int)option {
     HKHealthStore *healthStore = [[HKHealthStore alloc] init];
-    __block double stepsCount = 0.0;
+    __block NSMutableDictionary *resultCollection =  [NSMutableDictionary new];
     
     HKQuantityType *quantityType = [HKObjectType quantityTypeForIdentifier:HKQuantityTypeIdentifierStepCount];
     
@@ -87,7 +91,16 @@
             NSDate *anchorDate = [calendar dateFromComponents:anchorComponents];
             
             NSDateComponents *interval = [[NSDateComponents alloc] init];
-            interval.day = 1;
+            if ([intervalUnit isEqual:@"day"]) {
+              interval.day = intervalQuantity;
+            } else if ([intervalUnit isEqual:@"hour"]) {
+              interval.hour = intervalQuantity;
+            } else if ([intervalUnit isEqual:@"minute"]) {
+              interval.minute = intervalQuantity;
+            } else {
+              resultHandler(@"Interval Unit Not Supported");
+              return;
+            }
             HKStatisticsCollectionQuery *query = [[HKStatisticsCollectionQuery alloc]   initWithQuantityType:quantityType
                 quantitySamplePredicate:nil
                 options:HKStatisticsOptionCumulativeSum
@@ -98,19 +111,22 @@
             query.initialResultsHandler = ^(HKStatisticsCollectionQuery *query, HKStatisticsCollection *results, NSError *error) {
                 if (error) {
                     // Perform proper error handling here
-                    NSLog(@"*** An error occurred while calculating the statistics: %@ ***",error.localizedDescription);
+                    resultHandler(@"Access Denied, Add Permissions In HealthKit");
                 }
                 [results enumerateStatisticsFromDate:sTime
                                               toDate:eTime
-               withBlock:^(HKStatistics *result, BOOL *stop) {
+                withBlock:^(HKStatistics *result, BOOL *stop) {
                    HKQuantity *quantity = result.sumQuantity;
+                   double returnValue = 0;
                    if (quantity) {
-                       stepsCount = [quantity doubleValueForUnit:[HKUnit countUnit]];
-                       NSNumber *myDoubleNumber = [NSNumber numberWithDouble:stepsCount];
-                       NSString *returnValue = [myDoubleNumber stringValue];
-                       [self returnResult:returnValue :resultHandler];
+                       returnValue = [quantity doubleValueForUnit:[HKUnit countUnit]];
                    }
-                   
+                   NSTimeInterval seconds = [result.startDate timeIntervalSince1970];
+                   NSInteger milliseconds = seconds*1000;
+                   resultCollection[@(milliseconds)] = [NSNumber numberWithDouble:returnValue];
+                   if ([result.endDate compare: eTime] == NSOrderedDescending || [result.endDate compare: eTime] == NSOrderedSame) {
+                       [self returnResult :resultCollection :resultHandler :option];
+                   }
                }];
             };
             [healthStore executeQuery:query];
@@ -118,8 +134,27 @@
     }];
 }
 
--(void)returnResult :(NSString *)stepCount :(FlutterResult)result{
-    result(stepCount);
+-(void)returnResult :(NSMutableDictionary*) resultCollection :(FlutterResult)result :(int)option {
+    long total = 0;
+    switch (option) {
+        case 0:
+            result(resultCollection);
+            break;
+        case 1:
+            for (id key in resultCollection) {
+                total += [[resultCollection objectForKey:key] longValue];
+            }
+            result([NSNumber numberWithLong:total]);
+            break;
+        case 2:
+            for (id key in resultCollection) {
+                total += [[resultCollection objectForKey:key] longValue];
+            }
+            result([NSNumber numberWithLong:total]);
+            break;
+        default:
+            break;
+    }
 }
 
 @end

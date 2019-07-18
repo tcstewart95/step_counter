@@ -11,18 +11,18 @@ class StepCounter {
     return status;
   }
 
-  static Future<String> getStepsInIntervals(int startTime, int endTime, int intervalQuantity, String intervalUnit) async {
-    final String stepsInIntervals = await _channel.invokeMethod('getStepsInIntervals', {'startTime' : startTime, 'endTime' : endTime, 'intervalQuantity' : intervalQuantity, 'intervalUnit' : intervalUnit });
+  static Future<Map<dynamic,dynamic>> getStepsInIntervals(int startTime, int endTime, int intervalQuantity, String intervalUnit) async {
+    final Map<dynamic,dynamic> stepsInIntervals = await _channel.invokeMethod('getStepsInIntervals', {'startTime' : startTime, 'endTime' : endTime, 'intervalQuantity' : intervalQuantity, 'intervalUnit' : intervalUnit });
     return stepsInIntervals;
   }
 
-  static Future<String> getStepsDuringTime(int startTime, int endTime) async {
-    final String stepsDuringTime = await _channel.invokeMethod('getStepsDuringTime');
+  static Future<int> getStepsDuringTime(int startTime, int endTime) async {
+    final int stepsDuringTime = await _channel.invokeMethod('getStepsDuringTime', {'startTime' : startTime, 'endTime' : endTime});
     return stepsDuringTime;
   }
 
-  static Future<String> getStepsToday() async {
-    final String stepsToday = await _channel.invokeMethod('getStepsToday');
+  static Future<int> getStepsToday() async {
+    final int stepsToday = await _channel.invokeMethod('getStepsToday');
     return stepsToday;
   }
 }
