@@ -48,7 +48,7 @@ readAll() {
     Future<Map<dynamic,dynamic>> stepCount = StepCounter.getStepsInIntervals(start, end, intervalLength, intervalUnit);
 
     //Get the total number of steps between the start date and end date.
-    //Returns and int.
+    //Returns an int.
     Future<int> stepCount = StepCounter.getStepsDuringTime(start, end);
 
     //Get the total number of steps since midnight today.
