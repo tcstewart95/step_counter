@@ -43,12 +43,16 @@ readAll() {
     //Query HealthKit (on iOS) or the Google Fitness Store (on Android) through StepCounter.
 
     //Get the total number of steps between the start and end date in intervals.
+    //Returns key-value pairs of the start of the interval in milliseconds since the "Unix epoch" and the total
+    //number of steps in that interval.
     Future<Map<dynamic,dynamic>> stepCount = StepCounter.getStepsInIntervals(start, end, intervalLength, intervalUnit);
 
     //Get the total number of steps between the start date and end date.
+    //Returns and int.
     Future<int> stepCount = StepCounter.getStepsDuringTime(start, end);
 
     //Get the total number of steps since midnight today.
+    //Returns an int.
     Future<int> stepCount = StepCounter.getStepsToday();
 }
 ```
