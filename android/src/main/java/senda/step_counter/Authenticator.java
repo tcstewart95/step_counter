@@ -26,14 +26,14 @@ public class Authenticator extends Pedometer{
     private String LOG_TAG = "authReport";
     private int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 80085;
     private int postAction;
-    private int startTime;
-    private int endTime;
+    private long startTime;
+    private long endTime;
     private int intervalQuantity;
     private String intervalUnit;
 
     public String stepCount = "still launching";
 
-    Authenticator(Context context, Activity activity, int startTime, int endTime, int intervalQuantity, String intervalUnit) {
+    Authenticator(Context context, Activity activity, long startTime, long endTime, int intervalQuantity, String intervalUnit) {
         this.context = context;
         this.activity = activity;
         this.startTime = startTime;

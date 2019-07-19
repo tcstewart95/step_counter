@@ -62,7 +62,7 @@ public class StepCounterPlugin implements MethodCallHandler {
     return authy.stepCount;
   }
 
-  private String getStepsInIntervals(int startTime, int endTime, int intervalQuantity, String intervalUnit) {
+  private String getStepsInIntervals(long startTime, long endTime, int intervalQuantity, String intervalUnit) {
     Authenticator authy = new Authenticator(context, activity, startTime, endTime, intervalQuantity, intervalUnit);
     authy.authenticate(ON_POST_GET_STEPS_IN_INTERVALS);
     return authy.stepCount;
