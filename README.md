@@ -16,9 +16,9 @@ Add `step_counter` as a [dependency in the pubspec.yaml file](https://flutter.io
 
 ```dart
 readAll() {
-    Future<String> stepCountToday = StepCounter.getStepsToday();
+    Future<int> stepCountToday = StepCounter.getStepsToday();
     Future<String> stepCountInIntervales = StepCounter.getStepsInIntervals(int startTimeMilliseconds, int endTimeMilliseconds, int intervalQuantity, String intervalUnit);
-    Future<String> getStepsDuringTimePeriod = StepCounter.getStepsDuringTime(int startTimeMilliseconds, int endTimeMilliseconds);
+    Future<int> getStepsDuringTimePeriod = StepCounter.getStepsDuringTime(int startTimeMilliseconds, int endTimeMilliseconds);
 }
 ```
 
