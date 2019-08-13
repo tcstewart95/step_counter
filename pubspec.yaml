@@ -1,8 +1,11 @@
 name: step_counter
 description: Flutter plugin. Pedometer in ObjC and Java.
 version: 0.0.1
-author:
-homepage:
+authors:
+  - Tevin Stewart <tcstewart95@gmail.com>
+  - Connor Elliot
+
+homepage: https://github.com/tcstewart95/step_counter
 
 environment:
   sdk: ">=2.1.0 <3.0.0"

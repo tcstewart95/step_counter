@@ -3,9 +3,9 @@
 Flutter plugin that acts as a Pedometer in ObjC and Java using HealthKit and the Google Fitness Store.
 
 ## Usage
-To use this plugin, add `step_counter` as a [dependency in your pubspec.yaml file](https://flutter.io/platform-plugins/).
+Add `step_counter` as a [dependency in the pubspec.yaml file](https://flutter.io/platform-plugins/).
 
-## Getting Started
+## Setup
 #### Android
 [Enable Fitness API](https://developers.google.com/fit/android/get-started) and obtain an OAuth 2.0 client ID.
 
