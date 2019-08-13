@@ -29,6 +29,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.14.11"
+  cupertino_icons:
+    dependency: "direct main"
+    description:
+      name: cupertino_icons
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.2"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -93,6 +100,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.9.3"
+  step_counter:
+    dependency: "direct dev"
+    description:
+      path: ".."
+      relative: true
+    source: path
+    version: "0.0.1"
   stream_channel:
     dependency: transitive
     description:

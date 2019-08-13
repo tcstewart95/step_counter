@@ -36,16 +36,17 @@ readAll() {
     int end   = now.millisecondsSinceEpoch;
     int start = past.millisecondsSinceEpoch;
 
-    //Set the length and unit of intervals to be queried within the range of dates previously defined. 
+    //Set the length and unit of intervals to be queried within the range of dates previously defined. Current
+    //options are 'minutes', 'days', and 'hours'.
     int intervalLength = 20;
-    String intervalUnit = 'minute';
+    String intervalUnit = 'minutes';
 
     //Query HealthKit (on iOS) or the Google Fitness Store (on Android) through StepCounter.
 
     //Get the total number of steps between the start and end date in intervals.
     //Returns key-value pairs of the start of the interval in milliseconds since the "Unix epoch" and the total
     //number of steps in that interval.
-    Future<Map<dynamic,dynamic>> stepCount = StepCounter.getStepsInIntervals(start, end, intervalLength, intervalUnit);
+    Future<String> stepCount = StepCounter.getStepsInIntervals(start, end, intervalLength, intervalUnit);
 
     //Get the total number of steps between the start date and end date.
     //Returns an int.

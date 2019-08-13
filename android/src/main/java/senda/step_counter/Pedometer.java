@@ -36,7 +36,7 @@ import java.net.URL;
 public class Pedometer{
 
 
-    public static String steps = "";
+    public static String steps = "0";
     private static GoogleApiClient mClient = null;
 
     protected String getStepsInIntervals(long startTime, long endTime, int intervalQuantity, String intervalUnit,  Context context) {
@@ -91,7 +91,7 @@ public class Pedometer{
             Date today = Calendar.getInstance().getTime();
             millis = today.getTime();
         } catch (Exception e) {
-            return e.toString();
+            return "0";
         }
 
         try {
@@ -103,7 +103,7 @@ public class Pedometer{
             Date todayMidnight = cal.getTime();
             millisMidnight = todayMidnight.getTime();
         } catch (Exception e) {
-            return e.toString();
+            return "0";
         }
       
         final DataReadRequest req = new DataReadRequest.Builder()
@@ -134,20 +134,20 @@ public class Pedometer{
                         new requestHistory(new requestHistory.AsyncResponse() {
                             @Override
                             public void processFinish(String output) {
-                                if (output != null) {
-                                    steps = output;
+                                if (output.equals("java.lang.IndexOutOfBoundsException: Index: 0, Size: 0")) {
+                                    steps = "0";
                                 } else {
-                                    steps = "No Pedometer Connected";
+                                    steps = output;
                                 }
                             }
                         }).execute(list);
                     } catch (Exception e) {
-                        steps = "Unable to Connect";
+                       steps = "0";
                     }
                 }
 
                 public void onConnectionSuspended(int i) {
-                    steps = "Network Failure";
+                    steps = "0";
                 }
             }).build();
         mClient.connect();

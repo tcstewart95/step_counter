@@ -138,7 +138,7 @@
     long total = 0;
     switch (option) {
         case 0:
-            result(resultCollection);
+            result([NSString stringWithFormat:@"%@", resultCollection]);
             break;
         case 1:
             for (id key in resultCollection) {
