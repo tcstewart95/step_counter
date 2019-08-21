@@ -18,6 +18,7 @@ import com.google.android.gms.tasks.Task;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class Authenticator extends Pedometer{
@@ -32,7 +33,7 @@ public class Authenticator extends Pedometer{
     private String intervalUnit;
 
     public String stepCount = "still launching";
-    //public Map<String, String> stepCountIntervals;
+    public Map<Integer, Integer> stepCountIntervals;
 
     Authenticator(Context context, Activity activity, int startTime, int endTime, int intervalQuantity, String intervalUnit) {
         this.context = context;
@@ -65,7 +66,7 @@ public class Authenticator extends Pedometer{
                 switch (this.postAction) {
                     case 1:
                         //stepCountIntervals.putAll(getStepsInIntervals(startTime, endTime, intervalQuantity, intervalUnit, context));
-                        stepCount = getStepsInIntervals(startTime, endTime, intervalQuantity, intervalUnit, context);
+                        stepCountIntervals.putAll(getStepsInIntervals(startTime, endTime, intervalQuantity, intervalUnit, context));
                         break;
                     case 2:
                         stepCount = getStepsDuringTime(startTime, endTime, context);

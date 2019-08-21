@@ -2,6 +2,7 @@ package senda.step_counter;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.os.Bundle;
 import android.content.Context;
@@ -27,8 +28,10 @@ import com.google.android.gms.tasks.Task;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.net.URL;
 
@@ -36,10 +39,10 @@ import java.net.URL;
 public class Pedometer{
 
 
-    public static String steps = "0";
     private static GoogleApiClient mClient = null;
+    StepResults stepResults;
 
-    protected String getStepsInIntervals(long startTime, long endTime, int intervalQuantity, String intervalUnit,  Context context) {
+    protected Map<Integer, Integer> getStepsInIntervals(long startTime, long endTime, int intervalQuantity, String intervalUnit, Context context) {
         TimeUnit _timeUnit; 
         switch(intervalUnit) {
             case "days":
@@ -52,7 +55,7 @@ public class Pedometer{
                 _timeUnit = TimeUnit.MINUTES;
                 break;
             default:
-                return "Interval unit not supported";
+                return null;
         }
         
         final DataReadRequest req = new DataReadRequest.Builder()
@@ -62,9 +65,9 @@ public class Pedometer{
             .enableServerQueries()
             .build();
 
-        readGoogleResults(context, req);
+        StepResults sr = readGoogleResults(context, req);
 
-        return steps;
+        return sr.getData();
     }
 
 
@@ -76,10 +79,10 @@ public class Pedometer{
             .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
             .enableServerQueries()
             .build();
-            
-        readGoogleResults(context, req);
 
-        return steps;
+        StepResults sr = readGoogleResults(context, req);
+
+        return sr.getSteps();
     }
 
 
@@ -113,14 +116,14 @@ public class Pedometer{
             .enableServerQueries()
             .build();
 
-        readGoogleResults(context, req);
+        StepResults sr = readGoogleResults(context, req);
 
-        return steps;
+        return sr.getSteps();
     }
 
 
 
-    private void readGoogleResults(Context context, final DataReadRequest request) {
+    private StepResults readGoogleResults(Context context, final DataReadRequest request) {
         mClient = new GoogleApiClient.Builder(context)
             .addApi(Fitness.HISTORY_API)
             .addApi(Fitness.CONFIG_API)
@@ -135,21 +138,65 @@ public class Pedometer{
                             @Override
                             public void processFinish(String output) {
                                 if (output.equals("java.lang.IndexOutOfBoundsException: Index: 0, Size: 0")) {
-                                    steps = "0";
+                                    stepResults = new StepResults("0");
                                 } else {
-                                    steps = output;
+                                    stepResults = new StepResults(output);
                                 }
                             }
                         }).execute(list);
                     } catch (Exception e) {
-                       steps = "0";
+                        stepResults = new StepResults("0");
                     }
                 }
-
                 public void onConnectionSuspended(int i) {
-                    steps = "0";
+                    stepResults = new StepResults("0");
                 }
             }).build();
         mClient.connect();
+        return stepResults;
+    }
+}
+
+class StepResults {
+    private String steps = null;
+    private List<DataSet> results = null;
+    private Map<Integer, Integer> data = null;
+    private int start = 0;
+    private int end = 0;
+
+    StepResults(String newSteps) {
+        steps = newSteps;
+    }
+
+    StepResults(List<DataSet> newData) {
+        results = newData;
+    }
+
+    void setSteps(String newSteps) {
+        steps = newSteps;
+    }
+
+    void setData(Map<Integer, Integer> newData) {
+        data.putAll(newData);
+    }
+
+    String getSteps() {
+        return steps;
+    }
+
+    Map<Integer,Integer> getData() {
+
+        Iterator iterator = results.iterator();
+        int i = 0;
+        while(iterator.hasNext()) {
+            Iterator iterator1 = results.get(i).getDataPoints().listIterator();
+            int j = 0;
+            while (iterator1.hasNext()) {
+                data.put(1000, results.get(i).getDataPoints().get(j).getValue(Field.FIELD_STEPS).asInt());
+                j++;
+            }
+            i++;
+        }
+        return data;
     }
 }
