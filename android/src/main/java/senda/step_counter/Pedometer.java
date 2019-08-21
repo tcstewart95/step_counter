@@ -65,9 +65,9 @@ public class Pedometer{
             .enableServerQueries()
             .build();
 
-        StepResults sr = readGoogleResults(context, req);
+        readGoogleResults(context, req);
 
-        return sr.getData();
+        return stepResults.getData();
     }
 
 
@@ -80,9 +80,9 @@ public class Pedometer{
             .enableServerQueries()
             .build();
 
-        StepResults sr = readGoogleResults(context, req);
+        readGoogleResults(context, req);
 
-        return sr.getSteps();
+        return stepResults.getSteps();
     }
 
 
@@ -116,14 +116,14 @@ public class Pedometer{
             .enableServerQueries()
             .build();
 
-        StepResults sr = readGoogleResults(context, req);
+        readGoogleResults(context, req);
 
-        return sr.getSteps();
+        return stepResults.getSteps();
     }
 
 
 
-    private StepResults readGoogleResults(Context context, final DataReadRequest request) {
+    private void readGoogleResults(Context context, final DataReadRequest request) {
         mClient = new GoogleApiClient.Builder(context)
             .addApi(Fitness.HISTORY_API)
             .addApi(Fitness.CONFIG_API)
@@ -153,7 +153,6 @@ public class Pedometer{
                 }
             }).build();
         mClient.connect();
-        return stepResults;
     }
 }
 
