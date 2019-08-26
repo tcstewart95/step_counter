@@ -9,6 +9,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 import com.google.android.gms.fitness.data.Bucket;
+import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.Fitness;
@@ -25,11 +26,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 public class Pedometer extends Application {
 
     private GoogleApiClient mClient = null;
+    private Integer GET_INTERVALS_OPTION = 0;
+    private Integer GET_RECENT_OPTION = 1;
+    private Integer GET_TODAY_OPTION = 1;
 
     protected void getStepsInIntervals(Result result, long startTime, long endTime, int intervalQuantity, String intervalUnit, Context context) {
         TimeUnit _timeUnit; 
@@ -49,41 +54,26 @@ public class Pedometer extends Application {
         }
         
         final DataReadRequest req = new DataReadRequest.Builder()
-            .read(DataType.AGGREGATE_STEP_COUNT_DELTA)
+            .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
             .bucketByTime(intervalQuantity, _timeUnit)
             .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
             .enableServerQueries()
             .build();
 
-        try{
-
-            Task<DataReadResponse> response = Fitness.getHistoryClient(this, GoogleSignIn.getLastSignedInAccount(context))
-                    .readData(new DataReadRequest.Builder()
-                            .read(DataType.AGGREGATE_STEP_COUNT_DELTA)
-                            .bucketByTime(intervalQuantity, _timeUnit)
-                            .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                            .build());
-
-            DataReadResponse readDataResponse = Tasks.await(response);
-            DataSet dataSet = readDataResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA);
-
-        } catch (Exception e) {
-        }
-
-        readGoogleResults(result, context, req);
+        readGoogleResults(result, context, req, GET_INTERVALS_OPTION);
     }
 
 
 
     protected void getStepsDuringTime(Result result, long startTime, long endTime, Context context) {
         final DataReadRequest req = new DataReadRequest.Builder()
-            .read(DataType.AGGREGATE_STEP_COUNT_DELTA)
+            .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
             .bucketByTime(1, TimeUnit.DAYS)
             .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
             .enableServerQueries()
             .build();
 
-        readGoogleResults(result, context, req);
+        readGoogleResults(result, context, req, GET_RECENT_OPTION);
     }
 
 
@@ -118,10 +108,10 @@ public class Pedometer extends Application {
             .enableServerQueries()
             .build();
 
-        readGoogleResults(result, context, req);
+        readGoogleResults(result, context, req, GET_TODAY_OPTION);
     }
 
-    private void readGoogleResults(final Result result, final Context context, final DataReadRequest request) {
+    private void readGoogleResults(final Result result, final Context context, final DataReadRequest request, final Integer option) {
         mClient = new GoogleApiClient.Builder(context)
             .addApi(Fitness.HISTORY_API)
             .addApi(Fitness.CONFIG_API)
@@ -141,7 +131,7 @@ public class Pedometer extends Application {
                                     return;
                                 //If the output is not null, proceed
                                 } else if (!output.getBuckets().isEmpty()){
-                                    returnResults(result, output);
+                                    returnResults(result, output, option);
                                 }
                             }
                         }).execute(list);
@@ -158,19 +148,33 @@ public class Pedometer extends Application {
         mClient.connect();
     }
 
-    private void returnResults(Result result, DataReadResult input) {
+    private void returnResults(Result result, DataReadResult input, Integer option) {
         //Parse the results, returning a map
-        Map<Long, String> stepsIntervals = new HashMap<>();
+        Map<Long, Long> stepsIntervals = new HashMap<>();
         for (Bucket bucket : input.getBuckets()) {
             List<DataSet> dataSets = bucket.getDataSets();
             for (DataSet dataSet : dataSets) {
-                if (dataSet.getDataPoints().size() > 0) {
+                for (int i = 0; i < dataSet.getDataPoints().size(); i++) {
                     //Add Data Points to the map
-                    stepsIntervals.put(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).toString());
+                    stepsIntervals.put(dataSet.getDataPoints().get(i).getStartTime(TimeUnit.MILLISECONDS), Long.valueOf(dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt()));
                 }
             }
         }
-        //Send the completed map up the channel
-        result.success(stepsIntervals);
+        //Sort and Send the completed map up the channel
+        TreeMap<Long, Long> sortedStepIntervals = new TreeMap<Long, Long>(stepsIntervals);
+        switch (option) {
+            case 0:
+                result.success(sortedStepIntervals);
+                break;
+            case 1:
+                Long steps = Long.valueOf(0);
+                for(Map.Entry<Long, Long> entry : sortedStepIntervals.entrySet()) {
+                    steps += entry.getValue();
+                }
+                result.success(steps);
+                break;
+            default:
+                result.success(null);
+        }
     }
 }

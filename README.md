@@ -1,6 +1,6 @@
 # step_counter
 
-Flutter plugin that acts as a Pedometer in ObjC and Java using HealthKit and the Google Fitness Store.
+Flutter plugin that uses ObjC and Java to get a step count from HealthKit or the Google Fitness Store. The total steps today, steps during a time period, and steps during a time period in intervals can all be queried.
 
 ## Usage
 Add `step_counter` as a [dependency in the pubspec.yaml file](https://flutter.io/platform-plugins/).
@@ -16,8 +16,10 @@ Add `step_counter` as a [dependency in the pubspec.yaml file](https://flutter.io
 
 ```dart
 readAll() {
+    Future<Map<dynamic, dynamic>> stepCountInIntervales = StepCounter.getStepsInIntervals(int startTimeMilliseconds, int endTimeMilliseconds, int intervalQuantity, String intervalUnit);
+
     Future<int> stepCountToday = StepCounter.getStepsToday();
-    Future<String> stepCountInIntervales = StepCounter.getStepsInIntervals(int startTimeMilliseconds, int endTimeMilliseconds, int intervalQuantity, String intervalUnit);
+
     Future<int> getStepsDuringTimePeriod = StepCounter.getStepsDuringTime(int startTimeMilliseconds, int endTimeMilliseconds);
 }
 ```
@@ -25,9 +27,8 @@ readAll() {
 ## Sample Usage
 
 ```dart
-readAll() {
-    String results = "";
-    
+getSteps() {
+
     //Get today's date and set a date to the desired start date of the query.
     var now  = new DateTime.now();
     var past = now.subtract(new Duration(hours: 12));
@@ -45,8 +46,8 @@ readAll() {
 
     //Get the total number of steps between the start and end date in intervals.
     //Returns key-value pairs of the start of the interval in milliseconds since the "Unix epoch" and the total
-    //number of steps in that interval.
-    Future<String> stepCount = StepCounter.getStepsInIntervals(start, end, intervalLength, intervalUnit);
+    //number of steps in that interval. Keys are sorted by time ascending.
+    Future<Map<dynamic,dynamic>> stepCount = StepCounter.getStepsInIntervals(start, end, intervalLength, intervalUnit);
 
     //Get the total number of steps between the start date and end date.
     //Returns an int.
