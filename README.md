@@ -12,16 +12,14 @@ Add `step_counter` as a [dependency in the pubspec.yaml file](https://flutter.io
 #### iOS
 [Enable HealthKit](https://developer.apple.com/documentation/healthkit/setting_up_healthkit) and add NSHealthShareUsageDescription key to the Info.plist file.
 
-## Template
+## Functions
 
 ```dart
-readAll() {
-    Future<Map<dynamic, dynamic>> stepCountInIntervales = StepCounter.getStepsInIntervals(int startTimeMilliseconds, int endTimeMilliseconds, int intervalQuantity, String intervalUnit);
+Future<Map<dynamic, dynamic>> stepCountInIntervales = StepCounter.getStepsInIntervals(int startTimeMilliseconds, int endTimeMilliseconds, int intervalQuantity, String intervalUnit);
 
-    Future<int> stepCountToday = StepCounter.getStepsToday();
+Future<int> stepCountToday = StepCounter.getStepsToday();
 
-    Future<int> getStepsDuringTimePeriod = StepCounter.getStepsDuringTime(int startTimeMilliseconds, int endTimeMilliseconds);
-}
+Future<int> getStepsDuringTimePeriod = StepCounter.getStepsDuringTime(int startTimeMilliseconds, int endTimeMilliseconds);
 ```
 
 ## Sample Usage
