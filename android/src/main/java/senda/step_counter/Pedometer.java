@@ -1,48 +1,37 @@
 package senda.step_counter;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.provider.ContactsContract;
-import android.util.Log;
+import android.app.Application;
 import android.os.Bundle;
 import android.content.Context;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.common.api.GoogleApiClient;
+import io.flutter.plugin.common.MethodChannel.Result;
+
 import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataSet;
-import com.google.android.gms.fitness.data.DataPoint;
-import com.google.android.gms.fitness.data.DataSet;
-import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.Fitness;
-import com.google.android.gms.fitness.FitnessOptions;
+import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.fitness.result.DataReadResult;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.net.URL;
 
+public class Pedometer extends Application {
 
-public class Pedometer{
+    private GoogleApiClient mClient = null;
 
-
-    private static GoogleApiClient mClient = null;
-    StepResults stepResults;
-
-    protected Map<Integer, Integer> getStepsInIntervals(long startTime, long endTime, int intervalQuantity, String intervalUnit, Context context) {
+    protected void getStepsInIntervals(Result result, long startTime, long endTime, int intervalQuantity, String intervalUnit, Context context) {
         TimeUnit _timeUnit; 
         switch(intervalUnit) {
             case "days":
@@ -55,7 +44,8 @@ public class Pedometer{
                 _timeUnit = TimeUnit.MINUTES;
                 break;
             default:
-                return null;
+                result.success(null);
+                return;
         }
         
         final DataReadRequest req = new DataReadRequest.Builder()
@@ -65,14 +55,27 @@ public class Pedometer{
             .enableServerQueries()
             .build();
 
-        readGoogleResults(context, req);
+        try{
 
-        return stepResults.getData();
+            Task<DataReadResponse> response = Fitness.getHistoryClient(this, GoogleSignIn.getLastSignedInAccount(context))
+                    .readData(new DataReadRequest.Builder()
+                            .read(DataType.AGGREGATE_STEP_COUNT_DELTA)
+                            .bucketByTime(intervalQuantity, _timeUnit)
+                            .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                            .build());
+
+            DataReadResponse readDataResponse = Tasks.await(response);
+            DataSet dataSet = readDataResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA);
+
+        } catch (Exception e) {
+        }
+
+        readGoogleResults(result, context, req);
     }
 
 
 
-    protected String getStepsDuringTime(long startTime, long endTime, Context context) {
+    protected void getStepsDuringTime(Result result, long startTime, long endTime, Context context) {
         final DataReadRequest req = new DataReadRequest.Builder()
             .read(DataType.AGGREGATE_STEP_COUNT_DELTA)
             .bucketByTime(1, TimeUnit.DAYS)
@@ -80,21 +83,19 @@ public class Pedometer{
             .enableServerQueries()
             .build();
 
-        readGoogleResults(context, req);
-
-        return stepResults.getSteps();
+        readGoogleResults(result, context, req);
     }
 
 
-
-    protected String getStepsToday(Context context) {
-        long millis = 0;
-        long millisMidnight = 0;
+    protected void getStepsToday(Result result, Context context) {
+        long millis;
+        long millisMidnight;
         try {
             Date today = Calendar.getInstance().getTime();
             millis = today.getTime();
         } catch (Exception e) {
-            return "0";
+            result.success(null);
+            return;
         }
 
         try {
@@ -106,7 +107,8 @@ public class Pedometer{
             Date todayMidnight = cal.getTime();
             millisMidnight = todayMidnight.getTime();
         } catch (Exception e) {
-            return "0";
+            result.success(null);
+            return;
         }
       
         final DataReadRequest req = new DataReadRequest.Builder()
@@ -116,86 +118,59 @@ public class Pedometer{
             .enableServerQueries()
             .build();
 
-        readGoogleResults(context, req);
-
-        return stepResults.getSteps();
+        readGoogleResults(result, context, req);
     }
 
-
-
-    private void readGoogleResults(Context context, final DataReadRequest request) {
+    private void readGoogleResults(final Result result, final Context context, final DataReadRequest request) {
         mClient = new GoogleApiClient.Builder(context)
             .addApi(Fitness.HISTORY_API)
             .addApi(Fitness.CONFIG_API)
             .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                 public void onConnected(Bundle bundle) {
-                    //Async call to DB
-                    List<Object> list = new ArrayList<Object>();
+                    //Async call to Google API
+                    List<Object> list = new ArrayList<>();
                     try {
                         list.add(mClient);
                         list.add(request);
                         new requestHistory(new requestHistory.AsyncResponse() {
                             @Override
-                            public void processFinish(String output) {
+                            public void processFinish(DataReadResult output) {
+                                //If there is any error retrieving steps, catch it
                                 if (output.equals("java.lang.IndexOutOfBoundsException: Index: 0, Size: 0")) {
-                                    stepResults = new StepResults("0");
-                                } else {
-                                    stepResults = new StepResults(output);
+                                    result.success("99999");
+                                    return;
+                                //If the output is not null, proceed
+                                } else if (!output.getBuckets().isEmpty()){
+                                    returnResults(result, output);
                                 }
                             }
                         }).execute(list);
                     } catch (Exception e) {
-                        stepResults = new StepResults("0");
+                        //result.success(null);
+                        return;
                     }
                 }
                 public void onConnectionSuspended(int i) {
-                    stepResults = new StepResults("0");
+                    //result.success(null);
+                    return;
                 }
             }).build();
         mClient.connect();
     }
-}
 
-class StepResults {
-    private String steps = null;
-    private List<DataSet> results = null;
-    private Map<Integer, Integer> data = null;
-    private int start = 0;
-    private int end = 0;
-
-    StepResults(String newSteps) {
-        steps = newSteps;
-    }
-
-    StepResults(List<DataSet> newData) {
-        results = newData;
-    }
-
-    void setSteps(String newSteps) {
-        steps = newSteps;
-    }
-
-    void setData(Map<Integer, Integer> newData) {
-        data.putAll(newData);
-    }
-
-    String getSteps() {
-        return steps;
-    }
-
-    Map<Integer,Integer> getData() {
-
-        Iterator iterator = results.iterator();
-        int i = 0;
-        while(iterator.hasNext()) {
-            Iterator iterator1 = results.get(i).getDataPoints().listIterator();
-            int j = 0;
-            while (iterator1.hasNext()) {
-                data.put(1000, results.get(i).getDataPoints().get(j).getValue(Field.FIELD_STEPS).asInt());
-                j++;
+    private void returnResults(Result result, DataReadResult input) {
+        //Parse the results, returning a map
+        Map<Long, String> stepsIntervals = new HashMap<>();
+        for (Bucket bucket : input.getBuckets()) {
+            List<DataSet> dataSets = bucket.getDataSets();
+            for (DataSet dataSet : dataSets) {
+                if (dataSet.getDataPoints().size() > 0) {
+                    //Add Data Points to the map
+                    stepsIntervals.put(dataSet.getDataPoints().get(0).getStartTime(TimeUnit.MILLISECONDS), dataSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).toString());
+                }
             }
-            i++;
         }
-        return data;
+        //Send the completed map up the channel
+        result.success(stepsIntervals);
     }
 }

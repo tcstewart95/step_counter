@@ -14,8 +14,8 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 /** StepCounterPlugin */
 public class StepCounterPlugin implements MethodCallHandler {
 
-    Activity activity;
-    Context context;
+    private Activity activity;
+    private Context context;
 
     private int ON_POST_DO_NOTHING = 0;
     private int ON_POST_GET_STEPS_IN_INTERVALS = 1;
@@ -38,19 +38,24 @@ public class StepCounterPlugin implements MethodCallHandler {
 
         if (call.method.equals("authenticateUser"))
         {
-            result.success(authUser());
+            authUser(result);
         }
         else if(call.method.equals("getStepsInIntervals"))
         {
-            result.success(getStepsInIntervals((int) call.argument("startTime"), (int) call.argument("endTime"), (int) call.argument("intervalQuantity"), (String) call.argument("intervalUnit")));
+            Number startTime = call.argument("startTime");
+            Number endTime = call.argument("endTime");
+            Number intervalQuantity = call.argument("intervalQuantity");
+            getStepsInIntervals(result, startTime.longValue(), endTime.longValue(), intervalQuantity.intValue(), (String) call.argument("intervalUnit"));
         }
         else if(call.method.equals("getStepsDuringTime"))
         {
-            result.success(getStepsDuringTime((int) call.argument("startTime"), (int) call.argument("endTime")));
+            Number startTime = call.argument("startTime");
+            Number endTime = call.argument("endTime");
+            getStepsDuringTime(result, startTime.longValue(), endTime.longValue());
         }
         else if(call.method.equals("getStepsToday"))
         {
-            result.success(getStepsToday());
+            getStepsToday(result);
         }
         else
         {
@@ -58,27 +63,23 @@ public class StepCounterPlugin implements MethodCallHandler {
         }
     }
 
-    private String authUser() {
-        Authenticator authy = new Authenticator(context, activity);
+    private void authUser(Result result) {
+        Authenticator authy = new Authenticator(result, activity, context);
         authy.authenticate(ON_POST_DO_NOTHING);
-        return authy.stepCount;
     }
 
-    private Map<Integer, Integer> getStepsInIntervals(int startTime, int endTime, int intervalQuantity, String intervalUnit) {
-        Authenticator authy = new Authenticator(context, activity, startTime, endTime, intervalQuantity, intervalUnit);
+    private void getStepsInIntervals(Result result, long startTime, long endTime, int intervalQuantity, String intervalUnit) {
+        Authenticator authy = new Authenticator(result, activity, startTime, endTime, intervalQuantity, intervalUnit, context);
         authy.authenticate(ON_POST_GET_STEPS_IN_INTERVALS);
-        return authy.stepCountIntervals;
     }
 
-    private int getStepsDuringTime(int startTime, int endTime) {
-        Authenticator authy = new Authenticator(context, activity, startTime, endTime);
+    private void getStepsDuringTime(Result result, long startTime, long endTime) {
+        Authenticator authy = new Authenticator(result, activity, startTime, endTime, context);
         authy.authenticate(ON_POST_GET_STEPS_DURING_TIME);
-        return Integer.parseInt(authy.stepCount);
     }
 
-    private int getStepsToday() {
-        Authenticator authy = new Authenticator(context, activity);
+    private void getStepsToday(Result result) {
+        Authenticator authy = new Authenticator(result, activity, context);
         authy.authenticate(ON_POST_GET_STEPS_TODAY);
-        return Integer.parseInt(authy.stepCount);
     }
 }
