@@ -34,7 +34,7 @@ class _StepCounterState extends State<AccessSteps> {
 
   readAll() {
     String results = "";
-    Future<Map<String, int>> stepCount = StepCounter.getStepsToday();
+    Future<int> stepCount = StepCounter.getStepsToday();
     stepCount.then((value) {
       results = value.toString();
       setState(() {
