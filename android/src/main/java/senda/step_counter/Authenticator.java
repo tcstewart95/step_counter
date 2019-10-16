@@ -88,6 +88,9 @@ public class Authenticator extends Pedometer {
             case 3:
                 getStepsToday(result, context);
                 break;
+            case 4:
+                getBackgroundPermission(result, context);
+                break;
             default:
                  result.success("8888888");
                 break;

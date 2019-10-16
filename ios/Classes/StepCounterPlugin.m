@@ -13,7 +13,10 @@
   if ([@"authenticateUser" isEqualToString:call.method]) {
     result([self authUser]);
   }
-  if ([@"getStepsInIntervals" isEqualToString:call.method]) 
+  else if ([@"askBackgroundPermission"] isEqualToString:call.method]) {
+    result("Already Granted on iOS with Authentication");
+  }
+  else if ([@"getStepsInIntervals" isEqualToString:call.method]) 
   {
     [self getStepsInIntervals :[call.arguments[@"startTime"] longValue] :[call.arguments[@"endTime"] longValue] :[call.arguments[@"intervalQuantity"] intValue] :call.arguments[@"intervalUnit"] :result];
   }

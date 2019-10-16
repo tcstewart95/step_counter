@@ -29,11 +29,13 @@ class _StepCounterState extends State<AccessSteps> {
   @override
   void initState() {
     super.initState();
-    readAll();
+    readSteps();
   }
 
-  readAll() {
+  readSteps() async {
     String results = "";
+    String authenticationStatus = await StepCounter.authenticateUser();
+    String backgroundPermissionStatus = await StepCounter.getBackgroundPermission();
     Future<int> stepCount = StepCounter.getStepsToday();
     stepCount.then((value) {
       results = value.toString();
@@ -59,8 +61,8 @@ class _StepCounterState extends State<AccessSteps> {
               'Total Steps for Today: $_results'
             ),
             FlatButton(
-              onPressed: () => readAll(),
-              child: Text("Reload"),
+              onPressed: () => readSteps(),
+              child: Text("Refresh"),
             ),
           ],
         ),

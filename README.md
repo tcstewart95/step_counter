@@ -1,6 +1,6 @@
 # step_counter
 
-Flutter plugin that uses ObjC and Java to get a step count from HealthKit or the Google Fitness Store. The total steps today, steps during a time period, and steps during a time period in intervals can all be queried.
+Flutter plugin in ObjC and Java for querying HealthKit or the Google Fitness Store. Query total steps today, steps during a time period, and steps during a time period in intervals.
 
 ## Usage
 Add `step_counter` as a [dependency in the pubspec.yaml file](https://flutter.io/platform-plugins/).

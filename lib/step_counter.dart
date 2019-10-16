@@ -11,6 +11,11 @@ class StepCounter {
     return status;
   }
 
+  static Future<String> getBackgroundPermission() async {
+    final String status = await _channel.invokeMethod('askBackgroundPermission');
+    return status;
+  }
+
   static Future<Map<dynamic, dynamic>> getStepsInIntervals(int startTime, int endTime, int intervalQuantity, String intervalUnit) async {
     final Map<dynamic, dynamic> stepsInIntervals = await _channel.invokeMethod('getStepsInIntervals', {'startTime' : startTime, 'endTime' : endTime, 'intervalQuantity' : intervalQuantity, 'intervalUnit' : intervalUnit });
     return stepsInIntervals;

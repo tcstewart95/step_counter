@@ -19,6 +19,8 @@ import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.fitness.result.DataReadResult;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnFailureListener;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -35,6 +37,23 @@ public class Pedometer extends Application {
     private Integer GET_INTERVALS_OPTION = 0;
     private Integer GET_RECENT_OPTION = 1;
     private Integer GET_TODAY_OPTION = 1;
+
+    protected void getBackgroundPermission(final Result result, Context context) {
+        Fitness.getRecordingClient(this, GoogleSignIn.getLastSignedInAccount(this))
+            .subscribe(DataType.AGGREGATE_STEP_COUNT_DELTA)
+            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    result.success("Successfully subscribed!");
+                }
+            })
+            .addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(Exception e) {
+                    result.success("There was a problem subscribing.");
+                }
+            });
+    }
 
     protected void getStepsInIntervals(Result result, long startTime, long endTime, int intervalQuantity, String intervalUnit, Context context) {
         TimeUnit _timeUnit; 

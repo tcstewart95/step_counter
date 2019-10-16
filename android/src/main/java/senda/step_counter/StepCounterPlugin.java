@@ -21,6 +21,7 @@ public class StepCounterPlugin implements MethodCallHandler {
     private int ON_POST_GET_STEPS_IN_INTERVALS = 1;
     private int ON_POST_GET_STEPS_DURING_TIME = 2;
     private int ON_POST_GET_STEPS_TODAY = 3;
+    private int ON_POST_REQUEST_BACKGROUND = 4;
 
     /** Plugin registration. */
     public static void registerWith(Registrar registrar) {
@@ -39,6 +40,9 @@ public class StepCounterPlugin implements MethodCallHandler {
         if (call.method.equals("authenticateUser"))
         {
             authUser(result);
+        }
+        else if (call.method.equals("askBackgroundPermission")) {
+            background(result);
         }
         else if(call.method.equals("getStepsInIntervals"))
         {
@@ -66,6 +70,11 @@ public class StepCounterPlugin implements MethodCallHandler {
     private void authUser(Result result) {
         Authenticator authy = new Authenticator(result, activity, context);
         authy.authenticate(ON_POST_DO_NOTHING);
+    }
+
+    private void background(Result result) {
+        Authenticator authy = new Authenticator(result, activity, context);
+        authy.authenticate(ON_POST_REQUEST_BACKGROUND);
     }
 
     private void getStepsInIntervals(Result result, long startTime, long endTime, int intervalQuantity, String intervalUnit) {
